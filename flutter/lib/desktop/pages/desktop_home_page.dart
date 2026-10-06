@@ -45,6 +45,19 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   StreamSubscription? _uniLinksSubscription;
   var svcStopped = false.obs;
   var watchIsCanScreenRecording = false;
+  final _resetMacPermissions = <String>{};
+
+  // The app is ad-hoc signed, so every new build has a different code hash.
+  // A permission granted to an older build stays ticked in System Settings
+  // but no longer matches, and macOS silently denies it without prompting.
+  // Clearing our own entry once per launch lets macOS ask again for this build.
+  Future<void> _resetStaleMacPermission(String service) async {
+    if (!_resetMacPermissions.add(service)) return;
+    try {
+      await Process.run(
+          '/usr/bin/tccutil', ['reset', service, 'com.notdeposu.uzakbaglanti']);
+    } catch (_) {}
+  }
   var watchIsProcessTrust = false;
   var watchIsInputMonitoring = false;
   var watchIsCanRecordAudio = false;
@@ -539,6 +552,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       if (!(isOutgoingOnly || bind.mainIsCanScreenRecording(prompt: false))) {
         return buildInstallCard("Adım 1/3 · Ekran Kaydı", "config_screen", "Ayarı aç",
             () async {
+          await _resetStaleMacPermission('ScreenCapture');
           bind.mainIsCanScreenRecording(prompt: true);
           // macOS shows the request prompt only once per app, so later
           // presses would do nothing without opening the settings pane.
@@ -549,6 +563,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       } else if (!isOutgoingOnly && !bind.mainIsProcessTrusted(prompt: false)) {
         return buildInstallCard("Adım 2/3 · Erişilebilirlik", "config_acc", "Ayarı aç",
             () async {
+          await _resetStaleMacPermission('Accessibility');
           bind.mainIsProcessTrusted(prompt: true);
           launchUrl(Uri.parse(
               'x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility'));
@@ -557,6 +572,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       } else if (!bind.mainIsCanInputMonitoring(prompt: false)) {
         return buildInstallCard("Adım 3/3 · Klavye", "config_input", "Ayarı aç",
             () async {
+          await _resetStaleMacPermission('ListenEvent');
           bind.mainIsCanInputMonitoring(prompt: true);
           launchUrl(Uri.parse(
               'x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent'));
