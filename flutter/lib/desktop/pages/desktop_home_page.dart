@@ -64,10 +64,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Theme(
-          data: beyazTema(context),
-          child: Builder(builder: (c) => buildLeftPane(c)),
-        ),
+        buildLeftPane(context),
         if (!isIncomingOnly) const VerticalDivider(width: 1),
         if (!isIncomingOnly) Expanded(child: buildRightPane(context)),
       ],
@@ -91,8 +88,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         ),
       buildUzakBaslik(),
       buildTip(context),
-      if (!isOutgoingOnly) buildIDBoard(context),
-      if (!isOutgoingOnly) buildPasswordBoard(context),
+      if (!isOutgoingOnly) buildKimlikKarti(context),
       FutureBuilder<Widget>(
         future: Future.value(
             Obx(() => buildHelpCards(stateGlobal.updateUrl.value))),
@@ -130,15 +126,10 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     return ChangeNotifierProvider.value(
       value: gFFI.serverModel,
       child: Container(
-        width: isIncomingOnly ? 280.0 : 230.0,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF2BB8D0), Color(0xFF1A86C6), Color(0xFF1166B8)],
-            stops: [0.0, 0.55, 1.0],
-          ),
-        ),
+        width: isIncomingOnly ? 280.0 : 270.0,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Theme.of(context).colorScheme.background
+            : Colors.white,
         child: Stack(
           children: [
             Column(
@@ -186,18 +177,29 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     );
   }
 
-  // Uzak Bağlantı: sol panel degrade zemin üstünde beyaz yazı
-  ThemeData beyazTema(BuildContext context) {
-    final ana = Theme.of(context);
-    return ana.copyWith(
-      textTheme: ana.textTheme
-          .apply(bodyColor: Colors.white, displayColor: Colors.white),
-      iconTheme: ana.iconTheme.copyWith(color: Colors.white),
-      colorScheme:
-          ana.colorScheme.copyWith(background: const Color(0xFF1B8FC4)),
-      scaffoldBackgroundColor: const Color(0xFF2A9FD0),
-      textSelectionTheme:
-          const TextSelectionThemeData(selectionColor: Colors.white24),
+  // Kimlik ve şifre: tek, sade kart (TeamViewer düzeni)
+  Widget buildKimlikKarti(BuildContext context) {
+    final koyu = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+      padding: const EdgeInsets.only(top: 6, bottom: 2),
+      decoration: BoxDecoration(
+        color: koyu ? const Color(0xFF24262D) : const Color(0xFFF5F7FA),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+            color: koyu ? const Color(0xFF33363F) : const Color(0xFFE3E8EF)),
+      ),
+      child: Column(
+        children: [
+          buildIDBoard(context),
+          Divider(
+              height: 1,
+              indent: 16,
+              endIndent: 16,
+              color: koyu ? const Color(0xFF33363F) : const Color(0xFFE3E8EF)),
+          buildPasswordBoard(context),
+        ],
+      ),
     );
   }
 
@@ -213,7 +215,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
               borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
-                    color: Colors.black.withOpacity(0.18),
+                    color: const Color(0xFF1166B8).withOpacity(0.25),
                     blurRadius: 10,
                     offset: const Offset(0, 4))
               ],
@@ -221,13 +223,13 @@ class _DesktopHomePageState extends State<DesktopHomePage>
             child: SvgPicture.asset('assets/icon.svg', width: 38, height: 38),
           ),
           const SizedBox(width: 11),
-          const Expanded(
+          Expanded(
             child: Text(
               'Uzak Bağlantı',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                  color: Colors.white,
+                  color: Theme.of(context).textTheme.titleLarge?.color,
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.2),
@@ -240,7 +242,9 @@ class _DesktopHomePageState extends State<DesktopHomePage>
 
   buildRightPane(BuildContext context) {
     return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
+      color: Theme.of(context).brightness == Brightness.dark
+          ? Theme.of(context).scaffoldBackgroundColor
+          : const Color(0xFFF4F6F9),
       child: ConnectionPage(),
     );
   }
@@ -248,16 +252,13 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   buildIDBoard(BuildContext context) {
     final model = gFFI.serverModel;
     return Container(
-      margin: const EdgeInsets.only(left: 20, right: 11),
-      height: 57,
+      margin: const EdgeInsets.only(left: 14, right: 8),
+      height: 64,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.baseline,
         textBaseline: TextBaseline.alphabetic,
         children: [
-          Container(
-            width: 2,
-            decoration: const BoxDecoration(color: Colors.white70),
-          ).marginOnly(top: 5),
+          const SizedBox(width: 0),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(left: 7),
@@ -298,8 +299,10 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.only(top: 10, bottom: 10),
                         ),
-                        style: TextStyle(
-                          fontSize: 22,
+                        style: const TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.8,
                         ),
                       ).workaroundFreezeLinuxMint(),
                     ),
@@ -355,16 +358,12 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     final showOneTime = model.approveMode != 'click' &&
         model.verificationMethod != kUsePermanentPassword;
     return Container(
-      margin: EdgeInsets.only(left: 20.0, right: 16, top: 13, bottom: 13),
+      margin: EdgeInsets.only(left: 14.0, right: 10, top: 10, bottom: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.baseline,
         textBaseline: TextBaseline.alphabetic,
         children: [
-          Container(
-            width: 2,
-            height: 52,
-            decoration: BoxDecoration(color: Colors.white70),
-          ),
+          const SizedBox(width: 0, height: 52),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(left: 7),
@@ -396,7 +395,8 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                               contentPadding:
                                   EdgeInsets.only(top: 14, bottom: 10),
                             ),
-                            style: TextStyle(fontSize: 15),
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.w600),
                           ).workaroundFreezeLinuxMint(),
                         ),
                       ),
@@ -665,93 +665,97 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       }
     }
 
+    final koyu = Theme.of(context).brightness == Brightness.dark;
+    final yaziRengi = Theme.of(context).textTheme.titleLarge?.color;
     return Stack(
       children: [
         Container(
           margin: EdgeInsets.fromLTRB(
-              0, marginTop, 0, bind.isIncomingOnly() ? marginTop : 0),
-          child: Container(
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [
-                  Color.fromARGB(255, 226, 66, 188),
-                  Color.fromARGB(255, 244, 114, 124),
-                ],
-              )),
-              padding: EdgeInsets.all(20),
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: (title.isNotEmpty
-                          ? <Widget>[
-                              Center(
-                                  child: Text(
-                                translate(title),
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15),
-                              ).marginOnly(bottom: 6)),
-                            ]
-                          : <Widget>[]) +
-                      <Widget>[
-                        if (content.isNotEmpty)
-                          Text(
-                            translate(content),
-                            style: TextStyle(
-                                height: 1.5,
-                                color: Colors.white,
-                                fontWeight: FontWeight.normal,
-                                fontSize: 13),
-                          ).marginOnly(bottom: 20)
-                      ] +
-                      (btnText.isNotEmpty
-                          ? <Widget>[
-                              Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    FixedWidthButton(
-                                      width: 150,
-                                      padding: 8,
-                                      isOutline: true,
-                                      text: translate(btnText),
-                                      textColor: Colors.white,
-                                      borderColor: Colors.white,
-                                      textSize: 20,
-                                      radius: 10,
-                                      onTap: onPressed,
-                                    )
-                                  ])
-                            ]
-                          : <Widget>[]) +
-                      (help != null
-                          ? <Widget>[
-                              Center(
-                                  child: InkWell(
-                                      onTap: () async =>
-                                          await launchUrl(Uri.parse(link!)),
-                                      child: Text(
-                                        translate(help),
-                                        style: TextStyle(
-                                            decoration:
-                                                TextDecoration.underline,
-                                            color: Colors.white,
-                                            fontSize: 12),
-                                      )).marginOnly(top: 6)),
-                            ]
-                          : <Widget>[]))),
+              16, marginTop, 16, bind.isIncomingOnly() ? marginTop : 0),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+          decoration: BoxDecoration(
+            color: koyu ? const Color(0xFF24262D) : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+                color: koyu ? const Color(0xFF33363F) : const Color(0xFFE3E8EF)),
+            boxShadow: koyu
+                ? null
+                : [
+                    BoxShadow(
+                        color: const Color(0xFF0F172A).withOpacity(0.06),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4))
+                  ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (title.isNotEmpty)
+                Row(children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                        color: Color(0xFFF59E0B), shape: BoxShape.circle),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(translate(title),
+                        style: TextStyle(
+                            color: yaziRengi,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14)),
+                  ),
+                ]).marginOnly(bottom: 8),
+              if (content.isNotEmpty)
+                Text(
+                  translate(content),
+                  style: TextStyle(
+                      height: 1.45,
+                      color: yaziRengi?.withOpacity(0.7),
+                      fontSize: 12.5),
+                ).marginOnly(bottom: 14),
+              if (btnText.isNotEmpty)
+                SizedBox(
+                  width: double.infinity,
+                  height: 36,
+                  child: ElevatedButton(
+                    onPressed: onPressed,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: MyTheme.accent,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: Text(translate(btnText),
+                        style: const TextStyle(
+                            fontSize: 13.5, fontWeight: FontWeight.w600)),
+                  ),
+                ),
+              if (help != null)
+                Center(
+                    child: InkWell(
+                        onTap: () async => await launchUrl(Uri.parse(link!)),
+                        child: Text(
+                          translate(help),
+                          style: TextStyle(
+                              decoration: TextDecoration.underline,
+                              color: yaziRengi?.withOpacity(0.5),
+                              fontSize: 11.5),
+                        )).marginOnly(top: 8)),
+            ],
+          ),
         ),
         if (closeButton != null && closeButton == true)
           Positioned(
-            top: 18,
-            right: 0,
+            top: marginTop + 4,
+            right: 18,
             child: IconButton(
               icon: Icon(
                 Icons.close,
-                color: Colors.white,
-                size: 20,
+                color: yaziRengi?.withOpacity(0.5),
+                size: 18,
               ),
               onPressed: closeCard,
             ),
