@@ -537,7 +537,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     } else if (isMacOS) {
       final isOutgoingOnly = bind.isOutgoingOnly();
       if (!(isOutgoingOnly || bind.mainIsCanScreenRecording(prompt: false))) {
-        return buildInstallCard("Permissions", "config_screen", "Configure",
+        return buildInstallCard("Adım 1/3 · Ekran Kaydı", "config_screen", "Ayarı aç",
             () async {
           bind.mainIsCanScreenRecording(prompt: true);
           // macOS shows the request prompt only once per app, so later
@@ -547,15 +547,19 @@ class _DesktopHomePageState extends State<DesktopHomePage>
           watchIsCanScreenRecording = true;
         }, help: 'Help', link: translate("doc_mac_permission"));
       } else if (!isOutgoingOnly && !bind.mainIsProcessTrusted(prompt: false)) {
-        return buildInstallCard("Permissions", "config_acc", "Configure",
+        return buildInstallCard("Adım 2/3 · Erişilebilirlik", "config_acc", "Ayarı aç",
             () async {
           bind.mainIsProcessTrusted(prompt: true);
+          launchUrl(Uri.parse(
+              'x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility'));
           watchIsProcessTrust = true;
         }, help: 'Help', link: translate("doc_mac_permission"));
       } else if (!bind.mainIsCanInputMonitoring(prompt: false)) {
-        return buildInstallCard("Permissions", "config_input", "Configure",
+        return buildInstallCard("Adım 3/3 · Klavye", "config_input", "Ayarı aç",
             () async {
           bind.mainIsCanInputMonitoring(prompt: true);
+          launchUrl(Uri.parse(
+              'x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent'));
           watchIsInputMonitoring = true;
         }, help: 'Help', link: translate("doc_mac_permission"));
       } else if (!isOutgoingOnly &&
