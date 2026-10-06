@@ -533,6 +533,9 @@ jobs:
 
       - name: Uzak Baglanti paketi
         if: env.UPLOAD_ARTIFACT == 'true'
+        env:
+          MAC_IMZA_P12: ${{ secrets.MAC_IMZA_P12 }}
+          MAC_IMZA_PAROLA: ${{ secrets.MAC_IMZA_PAROLA }}
         run: |
           set -e
           cd ./flutter/build/macos/Build/Products/Release
@@ -543,7 +546,24 @@ jobs:
           /usr/libexec/PlistBuddy -c "Set :CFBundleName Uzak Bağlantı" $P
           /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string Uzak Bağlantı" $P || /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName Uzak Bağlantı" $P
           /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier com.notdeposu.uzakbaglanti" $P
-          codesign --force --deep -s - UzakBaglanti.app
+          # Sabit sertifika: güncellemelerden sonra macOS izinleri korunur.
+          if [ -n "$MAC_IMZA_P12" ]; then
+            KC="$RUNNER_TEMP/imza.keychain-db"
+            echo "$MAC_IMZA_P12" | base64 --decode > "$RUNNER_TEMP/imza.p12"
+            security create-keychain -p gecici "$KC"
+            security set-keychain-settings "$KC"
+            security unlock-keychain -p gecici "$KC"
+            security import "$RUNNER_TEMP/imza.p12" -k "$KC" -P "$MAC_IMZA_PAROLA" -T /usr/bin/codesign
+            security set-key-partition-list -S apple-tool:,apple: -s -k gecici "$KC" > /dev/null
+            security list-keychains -d user -s "$KC" $(security list-keychains -d user | tr -d '"')
+            security find-certificate -c "Uzak Baglanti Imza" -p "$KC" > "$RUNNER_TEMP/imza.pem"
+            sudo security add-trusted-cert -d -r trustRoot -p codeSign -k /Library/Keychains/System.keychain "$RUNNER_TEMP/imza.pem" || true
+            codesign --force --deep -s "Uzak Baglanti Imza" --keychain "$KC" UzakBaglanti.app
+            rm -f "$RUNNER_TEMP/imza.p12"
+          else
+            codesign --force --deep -s - UzakBaglanti.app
+          fi
+          codesign -d -r- UzakBaglanti.app
           cd -
           CREATE_DMG="$(command -v create-dmg)"
           CREATE_DMG="$(readlink -f "$CREATE_DMG")"
