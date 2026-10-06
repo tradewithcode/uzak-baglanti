@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_hbb/common.dart';
 import 'package:flutter_hbb/common/widgets/animated_rotation_widget.dart';
 import 'package:flutter_hbb/common/widgets/custom_password.dart';
@@ -63,7 +64,10 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        buildLeftPane(context),
+        Theme(
+          data: beyazTema(context),
+          child: Builder(builder: (c) => buildLeftPane(c)),
+        ),
         if (!isIncomingOnly) const VerticalDivider(width: 1),
         if (!isIncomingOnly) Expanded(child: buildRightPane(context)),
       ],
@@ -85,10 +89,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
           alignment: Alignment.center,
           child: loadPowered(context),
         ),
-      Align(
-        alignment: Alignment.center,
-        child: loadLogo(),
-      ),
+      buildUzakBaslik(),
       buildTip(context),
       if (!isOutgoingOnly) buildIDBoard(context),
       if (!isOutgoingOnly) buildPasswordBoard(context),
@@ -129,8 +130,15 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     return ChangeNotifierProvider.value(
       value: gFFI.serverModel,
       child: Container(
-        width: isIncomingOnly ? 280.0 : 200.0,
-        color: Theme.of(context).colorScheme.background,
+        width: isIncomingOnly ? 280.0 : 230.0,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF2BB8D0), Color(0xFF1A86C6), Color(0xFF1166B8)],
+            stops: [0.0, 0.55, 1.0],
+          ),
+        ),
         child: Stack(
           children: [
             Column(
@@ -178,6 +186,58 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     );
   }
 
+  // Uzak Bağlantı: sol panel degrade zemin üstünde beyaz yazı
+  ThemeData beyazTema(BuildContext context) {
+    final ana = Theme.of(context);
+    return ana.copyWith(
+      textTheme: ana.textTheme
+          .apply(bodyColor: Colors.white, displayColor: Colors.white),
+      iconTheme: ana.iconTheme.copyWith(color: Colors.white),
+      colorScheme:
+          ana.colorScheme.copyWith(background: const Color(0xFF1B8FC4)),
+      scaffoldBackgroundColor: const Color(0xFF2A9FD0),
+      textSelectionTheme:
+          const TextSelectionThemeData(selectionColor: Colors.white24),
+    );
+  }
+
+  Widget buildUzakBaslik() {
+    return Padding(
+      padding: const EdgeInsets.only(left: 20, right: 16, top: 22, bottom: 4),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black.withOpacity(0.18),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4))
+              ],
+            ),
+            child: SvgPicture.asset('assets/icon.svg', width: 38, height: 38),
+          ),
+          const SizedBox(width: 11),
+          const Expanded(
+            child: Text(
+              'Uzak Bağlantı',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.2),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   buildRightPane(BuildContext context) {
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
@@ -196,7 +256,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         children: [
           Container(
             width: 2,
-            decoration: const BoxDecoration(color: MyTheme.accent),
+            decoration: const BoxDecoration(color: Colors.white70),
           ).marginOnly(top: 5),
           Expanded(
             child: Padding(
@@ -303,7 +363,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
           Container(
             width: 2,
             height: 52,
-            decoration: BoxDecoration(color: MyTheme.accent),
+            decoration: BoxDecoration(color: Colors.white70),
           ),
           Expanded(
             child: Padding(
