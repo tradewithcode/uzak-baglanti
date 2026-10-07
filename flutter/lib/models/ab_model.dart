@@ -186,9 +186,12 @@ class AbModel {
           trySetCurrentToLast();
         }
         if (!addressbooks.containsKey(_currentName.value)) {
+          // Uzak Bağlantı: open the server's shared "Bilgisayarlar" book first.
           setCurrentName(legacyMode.value
               ? _legacyAddressBookName
-              : _personalAddressBookName);
+              : addressbooks.keys.firstWhereOrNull(
+                      (k) => k != _personalAddressBookName) ??
+                  _personalAddressBookName);
         }
         // pull current address book
         await current.pullAb(quiet: quiet);

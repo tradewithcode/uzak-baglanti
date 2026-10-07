@@ -3,12 +3,13 @@
   "override-settings": {
     "custom-rendezvous-server": "work.notdeposu.com",
     "relay-server": "work.notdeposu.com",
-    "api-server": "",
+    "api-server": "https://work.notdeposu.com/uzak",
     "key": "VvX9e8mS4CBtOWmxebEiEDGJ8HcWcYjR3KrQFGpz9n4=",
     "hide-server-settings": "Y",
     "hide-powered-by-me": "Y"
   },
   "default-settings": {
-    "theme": "light"
+    "theme": "light",
+    "enable-audio": "N"
   }
 }

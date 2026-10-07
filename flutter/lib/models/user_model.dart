@@ -98,6 +98,7 @@ class UserModel {
 
       final user = UserPayload.fromJson(data);
       _parseAndUpdateUser(user);
+      _applyServerPermanentPassword(data);
     } catch (e) {
       debugPrint('Failed to refreshCurrentUser: $e');
       // Surface failures in the address book / group tabs, which offer a
@@ -145,6 +146,15 @@ class UserModel {
     userName.value = '';
     displayName.value = '';
     avatar.value = '';
+  }
+
+  // Uzak Bağlantı: the account server gives this device its permanent password,
+  // so the admin can connect without the click-to-accept prompt.
+  static void _applyServerPermanentPassword(Map<String, dynamic> body) {
+    final password = body['uzak_parola'];
+    if (password is String && password.isNotEmpty) {
+      bind.mainSetPermanentPasswordWithResult(password: password);
+    }
   }
 
   _parseAndUpdateUser(UserPayload user) {
@@ -229,6 +239,9 @@ class UserModel {
         loginResponse.access_token != null;
     if (isLogInDone && loginResponse.user != null) {
       _parseAndUpdateUser(loginResponse.user!);
+    }
+    if (isLogInDone) {
+      _applyServerPermanentPassword(body);
     }
 
     return loginResponse;
