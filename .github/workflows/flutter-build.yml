@@ -543,14 +543,15 @@ jobs:
           mv UzakBaglanti.app/Contents/MacOS/RustDesk UzakBaglanti.app/Contents/MacOS/UzakBaglanti
           P=UzakBaglanti.app/Contents/Info.plist
           /usr/libexec/PlistBuddy -c "Set :CFBundleExecutable UzakBaglanti" $P
-          /usr/libexec/PlistBuddy -c "Set :CFBundleName Uzaktan Bağlantı" $P
-          /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string Uzaktan Bağlantı" $P || /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName Uzaktan Bağlantı" $P
+          # Info.plist'teki ad klasör adıyla aynı olmalı; yoksa Finder yerelleştirilmiş adı (aşağıda) göstermez
+          /usr/libexec/PlistBuddy -c "Set :CFBundleName UzakBaglanti" $P
+          /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string UzakBaglanti" $P || /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName UzakBaglanti" $P
           /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier com.notdeposu.uzakbaglanti" $P
           # Klasör adı UzakBaglanti.app kalır (kod bu yola bağlı); Finder'da görünen ad:
           /usr/libexec/PlistBuddy -c "Add :LSHasLocalizedDisplayName bool true" $P || /usr/libexec/PlistBuddy -c "Set :LSHasLocalizedDisplayName true" $P
           for L in Base en tr; do
             mkdir -p "UzakBaglanti.app/Contents/Resources/$L.lproj"
-            printf '"CFBundleDisplayName" = "Uzaktan Bağlantı";\n"CFBundleName" = "Uzaktan Bağlantı";\n' > "UzakBaglanti.app/Contents/Resources/$L.lproj/InfoPlist.strings"
+            printf '"CFBundleDisplayName" = "Uzak Bağlantı";\n"CFBundleName" = "Uzak Bağlantı";\n' > "UzakBaglanti.app/Contents/Resources/$L.lproj/InfoPlist.strings"
           done
           # Sabit sertifika: güncellemelerden sonra macOS izinleri korunur.
           if [ -n "$MAC_IMZA_P12" ]; then
@@ -576,7 +577,7 @@ jobs:
           CREATE_DMG="$(readlink -f "$CREATE_DMG")"
           sed -i -e 's/MAXIMUM_UNMOUNTING_ATTEMPTS=3/MAXIMUM_UNMOUNTING_ATTEMPTS=7/' "$CREATE_DMG"
           if [ "${{ matrix.job.arch }}" = "aarch64" ]; then AD=UzakBaglanti-Mac-Apple.dmg; else AD=UzakBaglanti-Mac-Intel.dmg; fi
-          create-dmg --volname "Uzaktan Bağlantı" --icon "UzakBaglanti.app" 200 190 --hide-extension "UzakBaglanti.app" --window-size 800 400 --app-drop-link 600 185 "$AD" ./flutter/build/macos/Build/Products/Release/UzakBaglanti.app
+          create-dmg --volname "Uzak Bağlantı" --icon "UzakBaglanti.app" 200 190 --hide-extension "UzakBaglanti.app" --window-size 800 400 --app-drop-link 600 185 "$AD" ./flutter/build/macos/Build/Products/Release/UzakBaglanti.app
 
       - name: Publish DMG package
         if: env.UPLOAD_ARTIFACT == 'true'

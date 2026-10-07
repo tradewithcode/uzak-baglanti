@@ -238,7 +238,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
           const SizedBox(width: 11),
           Expanded(
             child: Text(
-              'Uzaktan Bağlantı',
+              'Uzak Bağlantı',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
