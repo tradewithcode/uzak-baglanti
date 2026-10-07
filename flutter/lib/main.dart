@@ -158,7 +158,11 @@ void runMainApp(bool startService) async {
     // Check the startup argument, if we successfully handle the argument, we keep the main window hidden.
     final handledByUniLinks = await initUniLinks();
     debugPrint("handled by uni links: $handledByUniLinks");
-    if (handledByUniLinks || handleUriLink(cmdArgs: kBootArgs)) {
+    // --hidden: açılışta otomatik başlatmada pencere açılmaz, program tepside kalır.
+    // Kısayoldan / Başlat'tan açılınca bu bayrak olmaz, pencere normal açılır.
+    if (handledByUniLinks ||
+        handleUriLink(cmdArgs: kBootArgs) ||
+        kBootArgs.contains('--hidden')) {
       windowManager.hide();
     } else {
       windowManager.show();

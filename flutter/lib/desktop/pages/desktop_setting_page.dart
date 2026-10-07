@@ -433,10 +433,18 @@ class _GeneralState extends State<_General> {
     }
     return _Card(title: 'Install', children: [
       _Button('Install', () {
-        bind.mainGotoInstall();
+        final err = bind.mainPortableInstall();
+        if (err.isEmpty) {
+          showToast('Kuruldu: masaüstüne kısayol eklendi, açılışta otomatik başlar.');
+          setState(() {});
+        } else {
+          showToast('Kurulum başarısız: $err');
+        }
       }),
-      Text(translate('install_tip'))
-          .marginOnly(left: _kContentHMargin, top: 5, bottom: 5),
+      Text('Programı bu bilgisayara kurar: kullanıcı klasörüne kopyalar, masaüstüne '
+              'kısayol koyar ve açılışta arka planda (tepside) otomatik başlatır. Yönetici izni gerekmez.')
+          .marginOnly(
+              left: _kContentHMargin, right: _kContentHMargin, top: 5, bottom: 5),
     ]);
   }
 

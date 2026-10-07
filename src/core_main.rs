@@ -47,6 +47,7 @@ pub fn core_main() -> Option<Vec<String>> {
     let mut _is_quick_support = false;
     let mut _is_flutter_invoke_new_connection = false;
     let mut no_server = false;
+    let mut _is_hidden = false;
     let mut arg_exe = Default::default();
     for arg in std::env::args() {
         if i == 0 {
@@ -74,6 +75,10 @@ pub fn core_main() -> Option<Vec<String>> {
                 _is_quick_support = true;
             } else if arg == "--no-server" {
                 no_server = true;
+            } else if arg == "--hidden" {
+                // Açılışta otomatik başlatma: pencere açılmaz (args boş kalır → tepsi + sunucu
+                // normal başlar), yalnızca Flutter'a iletilir ki pencereyi gizli açsın.
+                _is_hidden = true;
             } else {
                 args.push(arg);
             }
@@ -735,6 +740,10 @@ pub fn core_main() -> Option<Vec<String>> {
         }
     }
     //_async_logger_holder.map(|x| x.flush());
+    #[cfg(feature = "flutter")]
+    if _is_hidden {
+        flutter_args.push("--hidden".to_owned());
+    }
     #[cfg(feature = "flutter")]
     return Some(flutter_args);
     #[cfg(not(feature = "flutter"))]

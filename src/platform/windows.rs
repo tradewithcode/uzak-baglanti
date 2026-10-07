@@ -4746,6 +4746,56 @@ pub(super) fn get_pids_with_first_arg_by_wmic<S1: AsRef<str>, S2: AsRef<str>>(
         .unwrap_or_default()
 }
 
+// Hafif "Kur": RustDesk'in servis tabanlı kurulumu yerine, portable exe'yi kullanıcı klasörüne
+// (%LOCALAPPDATA%\Programs\<ad>) kopyalar, masaüstü kısayolu oluşturur ve açılışta --hidden ile
+// (pencere açılmadan, tepside) başlaması için HKCU Run kaydı ekler. Yönetici izni gerekmez.
+pub fn portable_install() -> ResultType<()> {
+    let exe = std::env::current_exe()?.to_string_lossy().to_string();
+    let app = crate::get_app_name(); // klasör/exe adı: ASCII ("UzakBaglanti")
+    let display = crate::get_display_name(); // görünen ad: "Uzak Bağlantı"
+    if exe.contains('"') || app.contains('\'') || display.contains('\'') {
+        bail!("Geçersiz yol");
+    }
+    // Türkçe karakter ve boşlukları güvenle geçirmek için PowerShell'e UTF-16LE + base64 ile veriyoruz.
+    let script = format!(
+        r#"$ErrorActionPreference='Stop'
+$dir = Join-Path $env:LOCALAPPDATA 'Programs\{app}'
+New-Item -ItemType Directory -Force -Path $dir | Out-Null
+$target = Join-Path $dir '{app}.exe'
+Copy-Item -LiteralPath "{exe}" -Destination $target -Force
+$ws = New-Object -ComObject WScript.Shell
+$sc = $ws.CreateShortcut((Join-Path ([Environment]::GetFolderPath('Desktop')) '{display}.lnk'))
+$sc.TargetPath = $target
+$sc.WorkingDirectory = $dir
+$sc.IconLocation = $target
+$sc.Save()
+$run = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
+New-Item -Path $run -Force | Out-Null
+Set-ItemProperty -Path $run -Name '{display}' -Value ('"' + $target + '" --hidden')
+"#,
+        app = app,
+        exe = exe,
+        display = display,
+    );
+    use hbb_common::base64::{engine::general_purpose::STANDARD, Engine as _};
+    let utf16: Vec<u8> = script
+        .encode_utf16()
+        .flat_map(|u| u.to_le_bytes().to_vec())
+        .collect();
+    let encoded = STANDARD.encode(&utf16);
+    let output = std::process::Command::new("powershell")
+        .args(["-NoProfile", "-NonInteractive", "-EncodedCommand", &encoded])
+        .creation_flags(CREATE_NO_WINDOW)
+        .output()?;
+    if !output.status.success() {
+        bail!(
+            "Kurulum başarısız: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -2390,6 +2390,20 @@ pub fn main_goto_install() -> SyncReturn<bool> {
     SyncReturn(true)
 }
 
+// Hafif "Kur" (portable → kullanıcı klasörü + masaüstü kısayolu + açılışta --hidden başlat).
+// "" = başarılı, aksi halde hata metni.
+pub fn main_portable_install() -> SyncReturn<String> {
+    #[cfg(windows)]
+    {
+        SyncReturn(match crate::platform::windows::portable_install() {
+            Ok(_) => "".to_owned(),
+            Err(e) => e.to_string(),
+        })
+    }
+    #[cfg(not(windows))]
+    SyncReturn("unsupported".to_owned())
+}
+
 pub fn main_get_new_version() -> SyncReturn<String> {
     SyncReturn(get_new_version())
 }
