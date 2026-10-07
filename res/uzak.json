@@ -10,6 +10,7 @@
   },
   "default-settings": {
     "theme": "light",
-    "enable-audio": "N"
+    "enable-audio": "N",
+    "allow-websocket": "Y"
   }
 }
