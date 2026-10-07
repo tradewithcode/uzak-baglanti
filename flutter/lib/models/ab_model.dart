@@ -189,9 +189,9 @@ class AbModel {
           // Uzak Bağlantı: open the server's shared "Bilgisayarlar" book first.
           setCurrentName(legacyMode.value
               ? _legacyAddressBookName
-              : addressbooks.keys.firstWhereOrNull(
-                      (k) => k != _personalAddressBookName) ??
-                  _personalAddressBookName);
+              : addressbooks.keys.firstWhere(
+                  (k) => k != _personalAddressBookName,
+                  orElse: () => _personalAddressBookName));
         }
         // pull current address book
         await current.pullAb(quiet: quiet);
