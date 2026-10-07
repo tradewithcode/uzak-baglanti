@@ -413,6 +413,7 @@ class _GeneralState extends State<_General> {
       controller: scrollController,
       children: [
         if (!isWeb) service(),
+        installOption(),
         theme(),
         _Card(title: 'Language', children: [language()]),
         if (!isWeb) hwcodec(),
@@ -422,6 +423,21 @@ class _GeneralState extends State<_General> {
         other()
       ],
     ).marginOnly(bottom: _kListViewBottomMargin);
+  }
+
+  // Kurulum (Install) buraya taşındı; ana sayfadan kaldırıldı. Program portable çalışır,
+  // bu yalnızca açılışta otomatik başlatma / servis isteyenler için.
+  Widget installOption() {
+    if (!isWindows || bind.isDisableInstallation() || bind.mainIsInstalled()) {
+      return const Offstage();
+    }
+    return _Card(title: 'Install', children: [
+      _Button('Install', () {
+        bind.mainGotoInstall();
+      }),
+      Text(translate('install_tip'))
+          .marginOnly(left: _kContentHMargin, top: 5, bottom: 5),
+    ]);
   }
 
   Widget theme() {
