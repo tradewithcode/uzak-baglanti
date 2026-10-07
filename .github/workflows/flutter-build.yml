@@ -549,11 +549,12 @@ jobs:
           # Sabit sertifika: güncellemelerden sonra macOS izinleri korunur.
           if [ -n "$MAC_IMZA_P12" ]; then
             KC="$RUNNER_TEMP/imza.keychain-db"
-            echo "$MAC_IMZA_P12" | base64 --decode > "$RUNNER_TEMP/imza.p12"
+            printf '%s' "$MAC_IMZA_P12" | tr -d '[:space:]' | base64 --decode > "$RUNNER_TEMP/imza.p12"
+            IMZA_PAROLA="$(printf '%s' "$MAC_IMZA_PAROLA" | tr -d '[:space:]')"
             security create-keychain -p gecici "$KC"
             security set-keychain-settings "$KC"
             security unlock-keychain -p gecici "$KC"
-            security import "$RUNNER_TEMP/imza.p12" -k "$KC" -P "$MAC_IMZA_PAROLA" -T /usr/bin/codesign
+            security import "$RUNNER_TEMP/imza.p12" -k "$KC" -P "$IMZA_PAROLA" -T /usr/bin/codesign
             security set-key-partition-list -S apple-tool:,apple: -s -k gecici "$KC" > /dev/null
             security list-keychains -d user -s "$KC" $(security list-keychains -d user | tr -d '"')
             security find-certificate -c "Uzak Baglanti Imza" -p "$KC" > "$RUNNER_TEMP/imza.pem"
