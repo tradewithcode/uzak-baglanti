@@ -4761,8 +4761,14 @@ pub fn portable_install() -> ResultType<()> {
         r#"$ErrorActionPreference='Stop'
 $dir = Join-Path $env:LOCALAPPDATA 'Programs\{app}'
 New-Item -ItemType Directory -Force -Path $dir | Out-Null
-$target = Join-Path $dir '{app}.exe'
-Copy-Item -LiteralPath "{exe}" -Destination $target -Force
+$src = Split-Path -Parent "{exe}"
+if (Test-Path (Join-Path $src 'flutter_windows.dll')) {{
+  Copy-Item -Path (Join-Path $src '*') -Destination $dir -Recurse -Force
+  $target = Join-Path $dir (Split-Path -Leaf "{exe}")
+}} else {{
+  $target = Join-Path $dir '{app}.exe'
+  Copy-Item -LiteralPath "{exe}" -Destination $target -Force
+}}
 $ws = New-Object -ComObject WScript.Shell
 $sc = $ws.CreateShortcut((Join-Path ([Environment]::GetFolderPath('Desktop')) '{display}.lnk'))
 $sc.TargetPath = $target
