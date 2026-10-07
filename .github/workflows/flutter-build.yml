@@ -571,12 +571,14 @@ jobs:
             codesign --force --deep -s - UzakBaglanti.app
           fi
           codesign -d -r- UzakBaglanti.app
+          # Finder'da uygulama adı "Uzak Bağlantı" görünsün (imzadan sonra; imza içeriktedir, klasör adı etkilemez)
+          mv UzakBaglanti.app "Uzak Bağlantı.app"
           cd -
           CREATE_DMG="$(command -v create-dmg)"
           CREATE_DMG="$(readlink -f "$CREATE_DMG")"
           sed -i -e 's/MAXIMUM_UNMOUNTING_ATTEMPTS=3/MAXIMUM_UNMOUNTING_ATTEMPTS=7/' "$CREATE_DMG"
           if [ "${{ matrix.job.arch }}" = "aarch64" ]; then AD=UzakBaglanti-Mac-Apple.dmg; else AD=UzakBaglanti-Mac-Intel.dmg; fi
-          create-dmg --volname "Uzak Bağlantı" --icon "UzakBaglanti.app" 200 190 --hide-extension "UzakBaglanti.app" --window-size 800 400 --app-drop-link 600 185 "$AD" ./flutter/build/macos/Build/Products/Release/UzakBaglanti.app
+          create-dmg --volname "Uzak Bağlantı" --icon "Uzak Bağlantı.app" 200 190 --hide-extension "Uzak Bağlantı.app" --window-size 800 400 --app-drop-link 600 185 "$AD" "./flutter/build/macos/Build/Products/Release/Uzak Bağlantı.app"
 
       - name: Publish DMG package
         if: env.UPLOAD_ARTIFACT == 'true'
