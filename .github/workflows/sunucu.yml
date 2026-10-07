@@ -1,0 +1,28 @@
+name: Sunucu derle
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  derle:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: rustdesk-server master (alt modüllerle)
+        uses: actions/checkout@v4
+        with:
+          repository: rustdesk/rustdesk-server
+          ref: master
+          submodules: recursive
+      - name: Gerekli paketler
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler libsqlite3-dev
+      - name: Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Derle (hbbs, hbbr)
+        run: cargo build --release --bin hbbs --bin hbbr
+      - name: Yayınla
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: sunucu
+          files: |
+            target/release/hbbs
+            target/release/hbbr
