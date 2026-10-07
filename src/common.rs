@@ -2350,8 +2350,8 @@ pub fn rustdesk_interval(i: Interval) -> ThrottledInterval {
     ThrottledInterval::new(i)
 }
 
-// Uzak Bağlantı: ad, sunucu ve anahtar programın içine gömülüdür (res/uzak.json); imza gerekmez.
-pub const DISPLAY_NAME: &str = "Uzak Bağlantı";
+// Uzaktan Bağlantı: ad, sunucu ve anahtar programın içine gömülüdür (res/uzak.json); imza gerekmez.
+pub const DISPLAY_NAME: &str = "Uzaktan Bağlantı";
 const UZAK_AYAR: &str = include_str!("../res/uzak.json");
 
 pub fn get_display_name() -> String {
