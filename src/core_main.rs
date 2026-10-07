@@ -87,9 +87,14 @@ pub fn core_main() -> Option<Vec<String>> {
         // We can use `crate::check_process("--server", false)` on Windows.
         // Because `--server` process is the System user's process. We can't get the arguments in `check_process()`.
         // We can assume that self service running means the server is also running on Windows.
+        // Portable (kurulmamış) çalıştırmada da tepsi simgesi göster: pencere kapatılınca program
+        // gizlenip arka planda kalır, kullanıcı tepsiden geri açar yada çıkar.
         #[cfg(target_os = "windows")]
-        let should_check_start_tray = crate::platform::is_self_service_running()
-            && crate::platform::is_cur_exe_the_installed();
+        let should_check_start_tray = if crate::platform::is_cur_exe_the_installed() {
+            crate::platform::is_self_service_running()
+        } else {
+            true
+        };
         if should_check_start_tray && !crate::check_process("--tray", true) {
             #[cfg(target_os = "linux")]
             hbb_common::allow_err!(crate::platform::check_autostart_config());
