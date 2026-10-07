@@ -6,7 +6,8 @@
     "api-server": "https://work.notdeposu.com/uzak",
     "key": "VvX9e8mS4CBtOWmxebEiEDGJ8HcWcYjR3KrQFGpz9n4=",
     "hide-server-settings": "Y",
-    "hide-powered-by-me": "Y"
+    "hide-powered-by-me": "Y",
+    "allow-websocket": "Y"
   },
   "default-settings": {
     "theme": "light",
