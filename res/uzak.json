@@ -2,11 +2,12 @@
   "app-name": "UzakBaglanti",
   "override-settings": {
     "custom-rendezvous-server": "notdeposu.com",
-    "relay-server": "notdeposu.com:21117",
+    "relay-server": "notdeposu.com",
     "api-server": "https://notdeposu.com/uzak",
     "key": "VvX9e8mS4CBtOWmxebEiEDGJ8HcWcYjR3KrQFGpz9n4=",
     "hide-server-settings": "Y",
-    "hide-powered-by-me": "Y"
+    "hide-powered-by-me": "Y",
+    "allow-websocket": "Y"
   },
   "default-settings": {
     "theme": "light",
