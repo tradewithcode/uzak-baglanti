@@ -622,7 +622,20 @@ impl RendezvousMediator {
                         continue; // heartbeat
                     }
                     let msg = Message::parse_from_bytes(&bytes)?;
-                    rz.handle_resp(msg.union, Sink::Stream(&mut conn), &server, &mut update_latency).await?
+                    // Uzak Bağlantı: hbbs, WebSocket/TCP ile kayıtlı bilgisayara kayıt başına YALNIZ BİR istek iletir
+                    // (bağlantı ucunu isteği iletirken tüketir). İstek sonrası hemen yeniden kaydol: ardışık bağlantılar
+                    // (tarayıcı + dosya yöneticisi, yeniden bağlanma) ~30 sn beklemesin.
+                    let istek = matches!(
+                        msg.union,
+                        Some(rendezvous_message::Union::PunchHole(_))
+                            | Some(rendezvous_message::Union::RequestRelay(_))
+                            | Some(rendezvous_message::Union::FetchLocalAddr(_))
+                    );
+                    rz.handle_resp(msg.union, Sink::Stream(&mut conn), &server, &mut update_latency).await?;
+                    if istek {
+                        hbb_common::tokio::time::sleep(Duration::from_millis(300)).await;
+                        bail!("Re-register after relay/punch request");
+                    }
                 }
                 _ = timer.tick() => {
                     if SHOULD_EXIT.load(Ordering::SeqCst) {

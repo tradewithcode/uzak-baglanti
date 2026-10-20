@@ -1510,8 +1510,20 @@ class InputModel {
     return dt >= 0 && dt < kTouchAfterMouseWindowMs;
   }
 
+  // Uzak Bağlantı: tam ekranda farenin orta tuşu "oyun modu"nu (göreli fare, imleç kilidi) açar / kapatır — FPS oyunlarında
+  // (Counter-Strike, Minecraft…) uzak bilgisayarın faresini doğrudan kullanmak için. Orta tuşun kendisi karşıya gönderilmez.
+  bool _ortaTusYutuldu = false;
+  bool _ortaTusOyunModu(PointerDownEvent e) {
+    if (!isDesktop || e.kind != ui.PointerDeviceKind.mouse || e.buttons != kMiddleMouseButton) return false;
+    if (!stateGlobal.fullscreen.isTrue || !isRelativeMouseModeSupported) return false;
+    _ortaTusYutuldu = true;
+    toggleRelativeMouseMode();
+    return true;
+  }
+
   void onPointDownImage(PointerDownEvent e) {
     debugPrint("onPointDownImage ${e.kind}");
+    if (_ortaTusOyunModu(e)) return;
     _stopFling = true;
     if (isDesktop) _queryOtherWindowCoords = true;
     _remoteWindowCoords = [];
@@ -1556,6 +1568,10 @@ class InputModel {
   }
 
   void onPointUpImage(PointerUpEvent e) {
+    if (_ortaTusYutuldu) {   // oyun modunu açıp kapatan orta tuşun bırakılması da karşıya gitmez
+      _ortaTusYutuldu = false;
+      return;
+    }
     if (isDesktop) _queryOtherWindowCoords = false;
     if (isViewOnly && !showMyCursor) return;
     if (isViewCamera) return;

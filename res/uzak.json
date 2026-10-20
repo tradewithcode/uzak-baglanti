@@ -11,6 +11,6 @@
   },
   "default-settings": {
     "theme": "light",
-    "enable-audio": "N"
+    "enable-audio": "Y"
   }
 }

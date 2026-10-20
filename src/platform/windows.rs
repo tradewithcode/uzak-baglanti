@@ -3177,12 +3177,11 @@ pub fn get_unicode_from_vk(vk: u32) -> Option<u16> {
     }
 }
 
+// NotDeposu: eskiden her saniye "cmd /C tasklist | findstr consent.exe" çalışıyordu (hizmet olarak kurulu değilken
+// UAC denetimi). tasklist yavaş ve ağır: ~7,5 sn'de bir 4 süreç açıp işlemciyi meşgul ediyor, ekran yakalamayı takıldırıyordu.
+// Aynı denetim süreç anlık görüntüsüyle (CreateToolhelp32Snapshot) yapılır: yeni süreç yok, milisaniyeler sürer.
 pub fn is_process_consent_running() -> ResultType<bool> {
-    let output = std::process::Command::new("cmd")
-        .args(&["/C", "tasklist | findstr consent.exe"])
-        .creation_flags(CREATE_NO_WINDOW)
-        .output()?;
-    Ok(output.status.success() && !output.stdout.is_empty())
+    Ok(!get_pids("consent.exe")?.is_empty())
 }
 
 pub struct WakeLock(u32);
